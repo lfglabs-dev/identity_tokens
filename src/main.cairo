@@ -89,7 +89,7 @@ func claim{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, ecdsa_ptr: SignatureBuiltin*
 }(sbt_id, public_key, merkle_proof_len: felt, merkle_proof: felt*) {
     let (issuance_data) = issuance_controler.read();
-    with_attr error_message("merkle root is invalid") {
+    with_attr error_message("Merkle root is invalid") {
         tempvar merkle_branch_len = merkle_proof_len - 1;
         // assert merkle_proof_len = n; <- could be used to limit mint to 2^n
         assert_merkle_proof(
@@ -100,7 +100,7 @@ func claim{
         );
     }
 
-    with_attr error_message("max mint date reached") {
+    with_attr error_message("Max mint date reached") {
         let (timestamp) = get_block_timestamp();
         assert_le_felt(timestamp, issuance_data.max_claim_date);
     }
