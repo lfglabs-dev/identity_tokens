@@ -88,6 +88,8 @@ func transfer{
 func claim{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, ecdsa_ptr: SignatureBuiltin*
 }(sbt_id, public_key, merkle_proof_len: felt, merkle_proof: felt*) {
+    // todo: ask proof of ownership of public_key
+
     let (issuance_data) = issuance_controler.read();
     with_attr error_message("Merkle root is invalid") {
         tempvar merkle_branch_len = merkle_proof_len - 1;
@@ -106,6 +108,11 @@ func claim{
     }
 
     let (token_data) = data.read(sbt_id);
+
+    with_attr error_message("SBT already minted") {
+        assert token_data.public_key = 0;
+    }
+
     data.write(SSSBTData(token_data.token_id, public_key));
 
     return ();
