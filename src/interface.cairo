@@ -3,12 +3,12 @@ from starkware.cairo.common.uint256 import Uint256
 
 @contract_interface
 namespace SSSBT {
-    func get_public_key(sbt_id) -> (public_key: felt) {
+    func get_sbt_key(sbt_id) -> (public_key: felt) {
     }
 
-    func get_owner(sbt_id) -> (token_id: Uint256) {
+    func get_sbt_owner(sbt_id) -> (starknet_id: felt) {
     }
 
-    func transfer(sbt_id, token_id: Uint256, salt, signature: (felt, felt)) {
+    func sbt_transfer(sbt_id, starknet_id, salt, signature: (felt, felt)) {
     }
 }
