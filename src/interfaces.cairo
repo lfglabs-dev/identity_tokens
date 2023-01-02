@@ -20,7 +20,7 @@ namespace ISBT {
 @contract_interface
 namespace IWhitelistedSBT {
     func claim(
-        starknet_id, sbt_id, sbt_key, sbt_key_proof: (felt, felt), whitelist_sig: (felt, felt)
+        sbt_id, starknet_id, sbt_key, sbt_key_proof: (felt, felt), whitelist_sig: (felt, felt)
     ) {
     }
 }

@@ -25,12 +25,12 @@ func blacklisted_salt(salt) -> (blacklisted: felt) {
 }
 
 @event
-func sbt_transfer(source, target, sbt) {
+func sbt_transfer(sbt, source, target) {
 }
 
 func assert_claimable{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, ecdsa_ptr: SignatureBuiltin*
-}(starknet_id, sbt_id, sbt_key, sbt_key_proof: (felt, felt)) -> (message_hash: felt) {
+}(sbt_id, starknet_id, sbt_key, sbt_key_proof: (felt, felt)) -> (message_hash: felt) {
     // assert starknet_id belongs to caller
     let (caller) = get_caller_address();
     let (starknet_id_contract) = _starknet_id_contract.read();
@@ -38,10 +38,10 @@ func assert_claimable{
     assert caller = owner;
 
     // assert sbt_key_proof is a signature of hash(starknet_id, sbt_id)
-    let (message_hash) = hash2{hash_ptr=pedersen_ptr}(starknet_id, sbt_id);
+    let (message_hash) = hash2{hash_ptr=pedersen_ptr}(sbt_id, starknet_id);
     verify_ecdsa_signature(message_hash, sbt_key, sbt_key_proof[0], sbt_key_proof[1]);
 
-    sbt_transfer.emit(0, starknet_id, sbt_id);
+    sbt_transfer.emit(sbt_id, 0, starknet_id);
 
     return (message_hash,);
 }
@@ -63,7 +63,7 @@ func _sbt_transfer{
     }
 
     blacklisted_salt.write(salt, TRUE);
-    sbt_transfer.emit(data.starknet_id, starknet_id, sbt_id);
+    sbt_transfer.emit(sbt_id, data.starknet_id, starknet_id);
     sbt_data.write(sbt_id, SBTData(starknet_id, data.sbt_key));
     return ();
 }

@@ -29,9 +29,9 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 @external
 func claim{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, ecdsa_ptr: SignatureBuiltin*
-}(starknet_id, sbt_id, sbt_key, sbt_key_proof: (felt, felt), whitelist_sig: (felt, felt)) {
+}(sbt_id, starknet_id, sbt_key, sbt_key_proof: (felt, felt), whitelist_sig: (felt, felt)) {
     // message_hash = hash(starknet_id, sbt_id)
-    let (message_hash) = assert_claimable(starknet_id, sbt_id, sbt_key, sbt_key_proof);
+    let (message_hash) = assert_claimable(sbt_id, starknet_id, sbt_key, sbt_key_proof);
 
     // assert sbt_id is whitelisted for this starknet_id (otherwise MEV possible)
     let (whitelisting_key) = _whitelisting_key.read();
