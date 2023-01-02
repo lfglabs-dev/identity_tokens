@@ -24,6 +24,19 @@ func __setup__() {
 }
 
 @external
+func test_uri{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    tempvar sbt_contract;
+    %{ ids.sbt_contract = context.sbt_contract %}
+    let (uri_len, uri) = ISBT.get_uri(sbt_contract, 1);
+    assert uri_len = 4;
+    assert uri[0] = 0;
+    assert uri[1] = 1;
+    assert uri[2] = 2;
+    assert uri[3] = 49;
+    return ();
+}
+
+@external
 func test_claim_sbt{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
     tempvar starknet_id_contract;
     tempvar sbt_contract;

@@ -39,7 +39,7 @@ func read_uri_base{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 func append_number_ascii{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     num, arr: felt*
 ) -> (added_len: felt) {
-    let (low, high) = split_felt(num);
+    let (high, low) = split_felt(num);
     return _append_number_ascii(Uint256(low, high), arr);
 }
 
