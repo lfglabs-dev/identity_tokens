@@ -1,7 +1,7 @@
 [project]
-protostar-version = "0.8.1"
+protostar-version = "0.9.1"
 lib-path = "lib"
-cairo-path = ["lib", "./lib/cairo_contracts/src"]
+cairo-path = ["lib", "./lib/starknetid", "./lib/cairo_contracts/src"]
 
 [contracts]
-merkle_nft = ["src/presets/merkle_erc721.cairo"]
+whitelisted_sbt = ["src/presets/whitelisted.cairo"]

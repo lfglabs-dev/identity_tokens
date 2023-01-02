@@ -1,76 +1,69 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin
-from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.signature import verify_ecdsa_signature
-from starkware.cairo.common.small_merkle_tree import small_merkle_tree_update
-from starkware.cairo.common.math import assert_le_felt
+from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.hash import hash2
+from starknetid.src.IStarknetID import IStarknetid
 
-struct SSSBTData {
+struct SBTData {
     starknet_id: felt,
     sbt_key: felt,
 }
 
-struct IssuanceControler {
-    merkle_root: felt,
-    max_claim_date: felt,
+@storage_var
+func _starknet_id_contract() -> (starknet_id_contract: felt) {
 }
 
 @storage_var
-func data(sbt_id) -> (data: SSSBTData) {
+func sbt_data(sbt_id) -> (data: SBTData) {
 }
 
 @storage_var
-func blacklisted(salt) -> (blacklisted: felt) {
-}
-
-@storage_var
-func issuance_controler() -> (data: IssuanceControler) {
+func blacklisted_salt(salt) -> (blacklisted: felt) {
 }
 
 @event
-func sssbt_transfer(source: felt, target: felt, sbt) {
+func sbt_transfer(source, target, sbt) {
 }
 
-namespace Soulbound {
-    func get_sbt_key{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(sbt_id) -> (
-        public_key: felt
-    ) {
-        let (token_data) = data.read(sbt_id);
-        return (public_key=token_data.sbt_key);
+func assert_claimable{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, ecdsa_ptr: SignatureBuiltin*
+}(starknet_id, sbt_id, sbt_key, sbt_key_proof: (felt, felt)) -> (message_hash: felt) {
+    // assert starknet_id belongs to caller
+    let (caller) = get_caller_address();
+    let (starknet_id_contract) = _starknet_id_contract.read();
+    let (owner) = IStarknetid.owner_of(starknet_id_contract, starknet_id);
+    assert caller = owner;
+
+    // assert sbt_key_proof is a signature of hash(starknet_id, sbt_id)
+    let (message_hash) = hash2{hash_ptr=pedersen_ptr}(starknet_id, sbt_id);
+    verify_ecdsa_signature(message_hash, sbt_key, sbt_key_proof[0], sbt_key_proof[1]);
+
+    sbt_transfer.emit(0, starknet_id, sbt_id);
+
+    return (message_hash,);
+}
+
+func _sbt_transfer{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, ecdsa_ptr: SignatureBuiltin*
+}(sbt_id, starknet_id, salt, signature: (felt, felt)) {
+    alloc_locals;
+    with_attr error_message("Blacklisted salt") {
+        let (is_blacklisted) = blacklisted_salt.read(salt);
+        assert is_blacklisted = FALSE;
     }
 
-    func get_sbt_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(sbt_id) -> (
-        starknet_id: felt
-    ) {
-        let (token_data) = data.read(sbt_id);
-        return (starknet_id=token_data.starknet_id);
+    let (data) = sbt_data.read(sbt_id);
+    with_attr error_message("Invalid signature") {
+        let (message_hash) = hash2{hash_ptr=pedersen_ptr}(sbt_id, starknet_id);
+        let (message_hash) = hash2{hash_ptr=pedersen_ptr}(message_hash, salt);
+        verify_ecdsa_signature(message_hash, data.sbt_key, signature[0], signature[1]);
     }
 
-    func sbt_transfer{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        ecdsa_ptr: SignatureBuiltin*,
-    }(sbt_id, starknet_id: felt, salt, signature: (felt, felt)) {
-        let (token_data) = data.read(sbt_id);
-        with_attr error_message("Blacklisted salt") {
-            let (is_blacklisted) = blacklisted.read(salt);
-            assert is_blacklisted = FALSE;
-        }
-
-        with_attr error_message("Invalid signature") {
-            let (message_hash) = hash2{hash_ptr=pedersen_ptr}(sbt_id, starknet_id);
-            let (message_hash) = hash2{hash_ptr=pedersen_ptr}(message_hash, salt);
-            verify_ecdsa_signature(message_hash, token_data.public_key, signature[0], signature[1]);
-        }
-
-        blacklisted.write(salt, TRUE);
-        sssbt_transfer.emit(token_data.starknet_id, starknet_id, sbt_id);
-        data.write(sbt_id, SSSBTData(starknet_id, token_data.public_key));
-
-        return ();
-    }
+    blacklisted_salt.write(salt, TRUE);
+    sbt_transfer.emit(data.starknet_id, starknet_id, sbt_id);
+    sbt_data.write(sbt_id, SBTData(starknet_id, data.sbt_key));
+    return ();
 }
