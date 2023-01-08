@@ -4,4 +4,4 @@ lib-path = "lib"
 cairo-path = ["lib", "./lib/starknetid", "./lib/cairo_contracts/src"]
 
 [contracts]
-whitelisted_sbt = ["src/presets/whitelisted.cairo"]
+whitelisted_sbt = ["src/presets/whitelisted_sbt.cairo"]
