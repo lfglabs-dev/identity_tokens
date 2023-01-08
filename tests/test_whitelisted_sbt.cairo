@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starknetid.src.IStarknetID import IStarknetid
-from src.interfaces import INFT, ISBT, IWhitelistedSBT
+from src.interfaces import INFT, ISBT, WhitelistedISBT
 
 @external
 func __setup__() {
@@ -67,7 +67,7 @@ func test_claim_sbt{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuilt
     let (owner) = INFT.get_inft_owner(sbt_contract, sbt_id);
     assert owner = 0;
 
-    IWhitelistedSBT.claim(
+    WhitelistedISBT.claim(
         sbt_contract,
         sbt_id,
         starknet_id,
@@ -113,7 +113,7 @@ func test_transfer_sbt{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBu
     let (owner) = INFT.get_inft_owner(sbt_contract, sbt_id);
     assert owner = 0;
 
-    IWhitelistedSBT.claim(
+    WhitelistedISBT.claim(
         sbt_contract,
         sbt_id,
         starknet_id,

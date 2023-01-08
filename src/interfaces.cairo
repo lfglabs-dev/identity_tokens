@@ -23,7 +23,7 @@ namespace ISBT {
 }
 
 @contract_interface
-namespace IWhitelistedSBT {
+namespace WhitelistedISBT {
     // mints a sbt from a signature
     func claim(
         sbt_id, starknet_id, sbt_key, sbt_key_proof: (felt, felt), whitelist_sig: (felt, felt)
