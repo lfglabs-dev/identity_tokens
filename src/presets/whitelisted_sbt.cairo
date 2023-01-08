@@ -61,7 +61,7 @@ func get_sbt_key{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 }
 
 @view
-func get_sbt_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(sbt_id) -> (
+func get_inft_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(sbt_id) -> (
     starknet_id: felt
 ) {
     let (data) = sbt_data.read(sbt_id);

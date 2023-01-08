@@ -2,13 +2,13 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starknetid.src.IStarknetID import IStarknetid
-from src.interfaces import ISBT, IWhitelistedSBT
+from src.interfaces import INFT, ISBT, IWhitelistedSBT
 
 @external
 func __setup__() {
     %{
         context.starknet_id_contract = deploy_contract("./lib/starknetid/src/StarknetId.cairo").contract_address
-        context.sbt_contract = deploy_contract("./src/presets/whitelisted.cairo",
+        context.sbt_contract = deploy_contract("./src/presets/whitelisted_sbt.cairo",
                 [
                     context.starknet_id_contract,
                     # public key of private key 1
@@ -27,7 +27,7 @@ func __setup__() {
 func test_uri{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     tempvar sbt_contract;
     %{ ids.sbt_contract = context.sbt_contract %}
-    let (uri_len, uri) = ISBT.get_uri(sbt_contract, 1);
+    let (uri_len, uri) = INFT.get_uri(sbt_contract, 1);
     assert uri_len = 4;
     assert uri[0] = 0;
     assert uri[1] = 1;
@@ -64,7 +64,7 @@ func test_claim_sbt{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuilt
         (ids.whitelist_sig_0, ids.whitelist_sig_1)  = sign(message_hash, 1)
     %}
 
-    let (owner) = ISBT.get_sbt_owner(sbt_contract, sbt_id);
+    let (owner) = INFT.get_inft_owner(sbt_contract, sbt_id);
     assert owner = 0;
 
     IWhitelistedSBT.claim(
@@ -76,7 +76,7 @@ func test_claim_sbt{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuilt
         (whitelist_sig_0, whitelist_sig_1),
     );
 
-    let (owner) = ISBT.get_sbt_owner(sbt_contract, sbt_id);
+    let (owner) = INFT.get_inft_owner(sbt_contract, sbt_id);
     assert owner = starknet_id;
 
     return ();
@@ -110,7 +110,7 @@ func test_transfer_sbt{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBu
         (ids.whitelist_sig_0, ids.whitelist_sig_1)  = sign(message_hash, 1)
     %}
 
-    let (owner) = ISBT.get_sbt_owner(sbt_contract, sbt_id);
+    let (owner) = INFT.get_inft_owner(sbt_contract, sbt_id);
     assert owner = 0;
 
     IWhitelistedSBT.claim(
@@ -122,7 +122,7 @@ func test_transfer_sbt{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBu
         (whitelist_sig_0, whitelist_sig_1),
     );
 
-    let (owner) = ISBT.get_sbt_owner(sbt_contract, sbt_id);
+    let (owner) = INFT.get_inft_owner(sbt_contract, sbt_id);
     assert owner = starknet_id;
 
     tempvar transfer_sig_0;
@@ -137,7 +137,7 @@ func test_transfer_sbt{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBu
         sbt_contract, sbt_id, starknet_id=2, salt=12345, signature=(transfer_sig_0, transfer_sig_1)
     );
 
-    let (owner) = ISBT.get_sbt_owner(sbt_contract, sbt_id);
+    let (owner) = INFT.get_inft_owner(sbt_contract, sbt_id);
     assert owner = 2;
 
     return ();
