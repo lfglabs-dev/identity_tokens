@@ -22,7 +22,9 @@ max_fee = int(1e16)
 deployer = Deployer()
 starknet_id = 0x783A9097B26EAE0586373B2CE0ED3529DDC44069D1E0FBC4F66D42B69D6850D
 whitelisting_key = 0x1EF15C18599971B7BECED415A40F0C7DEACFD9B0D1819E03D723D8BC943CFCA
-uri_base = [1, 2, 3]
+uri_base = map(
+    ord, "ipfs://bafybeie37grteocnswpqmt4ra22ex25xx6ko253p4lnopesyz3mi45g5gi"
+)
 contract = "./build/whitelisted_sbt.json"
 
 
