@@ -1,10 +1,11 @@
 from starknet_py.net.models.chains import StarknetChainId
 from starknet_py.net.gateway_client import GatewayClient
 from starknet_py.net.udc_deployer.deployer import Deployer
-from starknet_py.compile.compiler import create_contract_class
 from starknet_py.net import AccountClient, KeyPair
+from hashlib import sha256
 import asyncio
 import json
+import time
 import sys
 
 argv = sys.argv
@@ -21,7 +22,13 @@ chainid: StarknetChainId = StarknetChainId.TESTNET
 max_fee = int(1e16)
 deployer = Deployer()
 starknet_id = 0x783A9097B26EAE0586373B2CE0ED3529DDC44069D1E0FBC4F66D42B69D6850D
-whitelisting_key = 0x1EF15C18599971B7BECED415A40F0C7DEACFD9B0D1819E03D723D8BC943CFCA
+password = int(argv[2])
+whitelisting_key = int.from_bytes(sha256(password.encode("utf-8")).digest(), "big") % (
+    2**251 + 17 * 2**192 + 1
+)
+print(whitelisting_key)
+# valid for 30 days
+max_timestamp = int(time.time()) + 30 * 24 * 3600
 uri_base = map(
     ord, "ipfs://bafybeie37grteocnswpqmt4ra22ex25xx6ko253p4lnopesyz3mi45g5gi"
 )
@@ -59,6 +66,7 @@ async def main():
         calldata={
             "starknet_id_contract": starknet_id,
             "whitelisting_key": whitelisting_key,
+            "max_timestamp": max_timestamp,
             "uri_base": uri_base,
         },
     )

@@ -3,6 +3,9 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin
 from src.uri_utils import set_uri_base, read_uri_base, append_number_ascii
 from starkware.cairo.common.signature import verify_ecdsa_signature
+from starkware.starknet.common.syscalls import get_block_timestamp
+from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.math import assert_le
 from src.library import (
     SBTData,
     _starknet_id_contract,
@@ -16,12 +19,21 @@ from src.library import (
 func _whitelisting_key() -> (whitelisting_key: felt) {
 }
 
+@storage_var
+func _max_timestamp() -> (max_timestamp: felt) {
+}
+
+@storage_var
+func _blacklisted_whitelist(sig_x) -> (is_blacklisted: felt) {
+}
+
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    starknet_id_contract, whitelisting_key, uri_base_len, uri_base: felt*
+    starknet_id_contract, whitelisting_key, max_timestamp, uri_base_len, uri_base: felt*
 ) {
     _starknet_id_contract.write(starknet_id_contract);
     _whitelisting_key.write(whitelisting_key);
+    _max_timestamp.write(max_timestamp);
     set_uri_base(uri_base_len, uri_base);
     return ();
 }
@@ -35,7 +47,22 @@ func claim{
 
     // assert sbt_id is whitelisted for this starknet_id (otherwise MEV possible)
     let (whitelisting_key) = _whitelisting_key.read();
-    verify_ecdsa_signature(message_hash, whitelisting_key, whitelist_sig[0], whitelist_sig[1]);
+    with_attr error_message("unfortunately your whitelist has already been used") {
+        let (is_blacklisted) = _blacklisted_whitelist.read(whitelist_sig[0]);
+        assert is_blacklisted = FALSE;
+        _blacklisted_whitelist.write(whitelist_sig[0], TRUE);
+    }
+
+    with_attr error_message("unfortunately your whitelist is not invalid") {
+        verify_ecdsa_signature(message_hash, whitelisting_key, whitelist_sig[0], whitelist_sig[1]);
+    }
+
+    // assert minting is still possible
+    let (current_timestamp) = get_block_timestamp();
+    let (max_timestamp) = _max_timestamp.read();
+    with_attr error_message("unfortunately the minting phase for this SBT is over") {
+        assert_le(current_timestamp, max_timestamp);
+    }
 
     // write sbt_id -> starknet_id mapping
     sbt_data.write(sbt_id, SBTData(starknet_id, sbt_key));

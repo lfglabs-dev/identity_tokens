@@ -13,6 +13,8 @@ func __setup__() {
                     context.starknet_id_contract,
                     # public key of private key 1
                     0x1ef15c18599971b7beced415a40f0c7deacfd9b0d1819e03d723d8bc943cfca,
+                    # max timestamp
+                    9999999999999999999999,
                     3,
                     0,
                     1,
