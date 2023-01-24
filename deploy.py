@@ -22,7 +22,7 @@ chainid: StarknetChainId = StarknetChainId.TESTNET
 max_fee = int(1e16)
 deployer = Deployer()
 starknet_id = 0x783A9097B26EAE0586373B2CE0ED3529DDC44069D1E0FBC4F66D42B69D6850D
-password = int(argv[2])
+password = argv[2]
 whitelisting_key = int.from_bytes(sha256(password.encode("utf-8")).digest(), "big") % (
     2**251 + 17 * 2**192 + 1
 )
