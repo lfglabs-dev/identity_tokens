@@ -6,7 +6,6 @@ from starkware.crypto.signature.signature import private_to_stark_key
 from hashlib import sha256
 import asyncio
 import json
-import time
 import sys
 
 argv = sys.argv
@@ -18,18 +17,18 @@ deployer_account_private_key = int(argv[1])
 # MAINNET: https://alpha-mainnet.starknet.io/
 # TESTNET: https://alpha4.starknet.io/
 # TESTNET2: https://alpha4-2.starknet.io/
-network_base_url = "https://alpha4.starknet.io/"
-chainid: StarknetChainId = StarknetChainId.TESTNET
+network_base_url = "https://alpha-mainnet.starknet.io/"
+chainid: StarknetChainId = StarknetChainId.MAINNET
 max_fee = int(1e16)
 deployer = Deployer()
-starknet_id = 0x783A9097B26EAE0586373B2CE0ED3529DDC44069D1E0FBC4F66D42B69D6850D
+starknet_id = 0x05DBDEDC203E92749E2E746E2D40A768D966BD243DF04A6B712E222BC040A9AF
 password = argv[2]
 whitelisting_key = int.from_bytes(sha256(password.encode("utf-8")).digest(), "big") % (
-    2**251 + 17 * 2**192 + 1
+    3618502788666131213697322783095070105526743751716087489154079457884512865583
 )
 pub_whitelisting_key = private_to_stark_key(whitelisting_key)
 # valid for 30 days
-max_timestamp = int(time.time()) + 30 * 24 * 3600
+max_timestamp = 1675900800
 uri_base = map(
     ord, "ipfs://bafybeie37grteocnswpqmt4ra22ex25xx6ko253p4lnopesyz3mi45g5gi"
 )

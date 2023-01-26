@@ -53,7 +53,7 @@ func claim{
         _blacklisted_whitelist.write(whitelist_sig[0], TRUE);
     }
 
-    with_attr error_message("unfortunately your whitelist is not invalid") {
+    with_attr error_message("unfortunately your whitelist is not valid") {
         verify_ecdsa_signature(message_hash, whitelisting_key, whitelist_sig[0], whitelist_sig[1]);
     }
 
