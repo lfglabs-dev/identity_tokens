@@ -2,6 +2,7 @@ from starknet_py.net.models.chains import StarknetChainId
 from starknet_py.net.gateway_client import GatewayClient
 from starknet_py.net.udc_deployer.deployer import Deployer
 from starknet_py.net import AccountClient, KeyPair
+from starkware.crypto.signature.signature import private_to_stark_key
 from hashlib import sha256
 import asyncio
 import json
@@ -26,7 +27,7 @@ password = argv[2]
 whitelisting_key = int.from_bytes(sha256(password.encode("utf-8")).digest(), "big") % (
     2**251 + 17 * 2**192 + 1
 )
-print(whitelisting_key)
+pub_whitelisting_key = private_to_stark_key(whitelisting_key)
 # valid for 30 days
 max_timestamp = int(time.time()) + 30 * 24 * 3600
 uri_base = map(
@@ -65,7 +66,7 @@ async def main():
         abi=abi,
         calldata={
             "starknet_id_contract": starknet_id,
-            "whitelisting_key": whitelisting_key,
+            "whitelisting_key": pub_whitelisting_key,
             "max_timestamp": max_timestamp,
             "uri_base": uri_base,
         },
