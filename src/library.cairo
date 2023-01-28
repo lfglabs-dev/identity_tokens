@@ -31,6 +31,11 @@ func sbt_transfer(sbt, source, target) {
 func assert_claimable{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, ecdsa_ptr: SignatureBuiltin*
 }(sbt_id, starknet_id, sbt_key, sbt_key_proof: (felt, felt)) -> (message_hash: felt) {
+
+    // assert sbt_id was not already minted
+    let (data) = sbt_data.read(sbt_id);
+    assert data.sbt_key = 0;
+
     // assert starknet_id belongs to caller
     let (caller) = get_caller_address();
     let (starknet_id_contract) = _starknet_id_contract.read();
