@@ -5,3 +5,4 @@ cairo-path = ["lib", "./lib/starknetid", "./lib/cairo_contracts/src"]
 
 [contracts]
 whitelisted_sbt = ["src/presets/whitelisted_sbt.cairo"]
+proxy = ["lib/cairo_contracts/src/openzeppelin/upgrades/presets/Proxy.cairo"]

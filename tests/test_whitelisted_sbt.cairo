@@ -7,20 +7,21 @@ from src.interfaces import INFT, ISBT, WhitelistedISBT
 @external
 func __setup__() {
     %{
+        from starkware.starknet.compiler.compile import get_selector_from_name
         context.starknet_id_contract = deploy_contract("./lib/starknetid/src/StarknetId.cairo").contract_address
-        context.sbt_contract = deploy_contract("./src/presets/whitelisted_sbt.cairo",
-                [
-                    context.starknet_id_contract,
-                    # public key of private key 1
-                    0x1ef15c18599971b7beced415a40f0c7deacfd9b0d1819e03d723d8bc943cfca,
-                    # max timestamp
-                    9999999999999999999999,
-                    3,
-                    0,
-                    1,
-                    2
-                ]
-            ).contract_address
+        sbt_contract_class_hash = declare("./src/presets/whitelisted_sbt.cairo").class_hash
+        context.sbt_contract = deploy_contract("./lib/cairo_contracts/src/openzeppelin/upgrades/presets/Proxy.cairo", [sbt_contract_class_hash,
+            get_selector_from_name("initializer"), 8,
+            456,
+            context.starknet_id_contract,
+            # public key of private key 1
+            0x1ef15c18599971b7beced415a40f0c7deacfd9b0d1819e03d723d8bc943cfca,
+            # max timestamp
+            9999999999999999999999,
+            3,
+            0,
+            1,
+            2]).contract_address
     %}
     return ();
 }

@@ -1,11 +1,12 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin
-from src.uri_utils import set_uri_base, read_uri_base, append_number_ascii
 from starkware.cairo.common.signature import verify_ecdsa_signature
 from starkware.starknet.common.syscalls import get_block_timestamp
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import assert_le
+from cairo_contracts.src.openzeppelin.upgrades.library import Proxy
+from src.uri_utils import set_uri_base, read_uri_base, append_number_ascii
 from src.library import (
     SBTData,
     _starknet_id_contract,
@@ -27,10 +28,16 @@ func _max_timestamp() -> (max_timestamp: felt) {
 func _blacklisted_whitelist(sig_x) -> (is_blacklisted: felt) {
 }
 
-@constructor
-func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    starknet_id_contract, whitelisting_key, max_timestamp, uri_base_len, uri_base: felt*
+@external
+func initializer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    proxy_admin,
+    starknet_id_contract,
+    whitelisting_key,
+    max_timestamp,
+    uri_base_len,
+    uri_base: felt*,
 ) {
+    Proxy.initializer(proxy_admin);
     _starknet_id_contract.write(starknet_id_contract);
     _whitelisting_key.write(whitelisting_key);
     _max_timestamp.write(max_timestamp);
@@ -69,6 +76,22 @@ func claim{
     return ();
 }
 
+@external
+func sbt_transfer{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, ecdsa_ptr: SignatureBuiltin*
+}(sbt_id, starknet_id, salt, signature: (felt, felt)) {
+    return _sbt_transfer(sbt_id, starknet_id, salt, signature);
+}
+
+@external
+func upgrade{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    new_implementation: felt
+) {
+    Proxy.assert_only_admin();
+    Proxy._set_implementation_hash(new_implementation);
+    return ();
+}
+
 @view
 func get_uri{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(sbt_id) -> (
     uri_len: felt, uri: felt*
@@ -93,11 +116,4 @@ func get_inft_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 ) {
     let (data) = sbt_data.read(sbt_id);
     return (data.starknet_id,);
-}
-
-@external
-func sbt_transfer{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, ecdsa_ptr: SignatureBuiltin*
-}(sbt_id, starknet_id, salt, signature: (felt, felt)) {
-    return _sbt_transfer(sbt_id, starknet_id, salt, signature);
 }
