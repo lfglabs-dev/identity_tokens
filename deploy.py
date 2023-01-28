@@ -30,7 +30,7 @@ pub_whitelisting_key = private_to_stark_key(whitelisting_key)
 # valid for 30 days
 max_timestamp = 1675900800
 uri_base = map(
-    ord, "ipfs://bafybeie37grteocnswpqmt4ra22ex25xx6ko253p4lnopesyz3mi45g5gi"
+    ord, "ipfs://bafkreifh2rr5a2ocgfas2b2voqmzl7uq4yws7nyz6x52x7ndoigbgn4uny?id="
 )
 contract = "./build/whitelisted_sbt.json"
 
